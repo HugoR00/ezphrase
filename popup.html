@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Assistente de Atendimento</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="status" id="status"></div>
+
+<div class="container">
+  <div class="header">
+    <h1>🤖 Frases rápidas!</h1>
+    <p>Configure seus quick chats</p>
+  </div>
+
+  <div class="card">
+    <div class="info-box">
+      <h4>Como usar:</h4>
+      <p>Digite "/" seguido do comando em qualquer campo de texto e ele será substituído automaticamente!</p>
+      <div class="example-commands">
+        <div class="example-cmd">/bomdia</div>
+        <div class="example-cmd">/obrigado</div>
+        <div class="example-cmd">/aguarde</div>
+        <div class="example-cmd">/resolver</div>
+      </div>
+    </div>
+
+    <form id="commandForm">
+      <div class="form-group">
+        <label for="commandTrigger">Comando (ex: bomdia)</label>
+        <input type="text" id="commandTrigger" placeholder="Digite o comando sem a /" required>
+      </div>
+
+      <div class="form-group">
+        <label for="commandText">Texto de substituição</label>
+        <textarea id="commandText" placeholder="Bom dia! Como posso ajudá-lo hoje?" required></textarea>
+      </div>
+
+      <button type="submit" class="btn">✨ Adicionar Comando</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom: 15px; color: #333; font-size: 16px;">📋 Comandos Salvos</h3>
+    <div id="commandsList" class="commands-list">
+      <div class="empty-state">
+        <div class="empty-state-icon">💬</div>
+        <p>Nenhum comando criado ainda.<br>Adicione seu primeiro comando acima!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

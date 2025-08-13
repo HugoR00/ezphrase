@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Quick phrase",
+  "version": "1.0.0",
+  "description": "Substitua comandos por textos definidos por você!",
+
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Quick phrase",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  }
+}
