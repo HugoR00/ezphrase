@@ -105,3 +105,96 @@ function renderizarComandos(){
     `).join('')
 
 }
+
+//Função para adicionar comandos
+
+async function addComandos(trigger, text){
+    trigger = trigger.replace(/[\/\s]/g, '').toLowerCase(); //Remover espaços e caracteres especiais do trigger, que é o
+    //"título" do comando, além de deixar tudo minúsculo
+
+    if(!trigger || !text.trim()){ //Verifica se o trigger ou texto dele estão vazios
+        showStatus('Por favor, preencha os campos para adicionar um comando!', true);
+        return;
+    }
+
+    if(commands[trigger]){ //Verifica se esse trigger já não está presente no array commands
+        showStatus('Já existe um comando com este nome! Por favor escolha outro', true);
+        return;
+    }
+
+    commands[trigger] = text.trim(); //Salva no commands esse trigger com o text já trimmado, ou seja, sem espaços no
+    //início e no fim
+
+    await salvarComandos(); //Salva os comandos
+    renderizarComandos(); //Após salvar os comandos renderiza eles na tela, ou seja, escreve no HTML
+
+    document.getElementById('commandForm').reset(); //Reseta o form de comandos para pegar o que foi renderizado
+
+    //Notifica o content script sobre a mudança
+    notifyContentScript();
+}
+
+//Função para remover comandos
+
+async function deletarComandos(trigger){
+    delete commands[trigger];
+    await salvarComandos();
+    renderizarComandos();
+
+    notifyContentScript();
+}
+
+window.deleteComandos = deletarComandos; //Torna ela global para onclick no HTML
+
+// Notifica o content script que os comandos mudaram
+function notifyContentScript() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+                type: 'COMMANDS_UPDATED',
+                commands: commands
+            }).catch(() => {
+                // Ignora erro se não houver content script na aba
+            });
+        }
+    });
+}
+
+
+// Mostra status de erro/notificações
+function showStatus(message, isError = false) {
+    const status = document.getElementById('status');
+    status.textContent = message;
+    status.className = 'status show' + (isError ? ' error' : '');
+    setTimeout(() => {
+        status.classList.remove('show');
+    }, 2000);
+}
+
+//Ordem de inicialização e event listeners
+
+document.addEventListener('DOMContentLoaded', async() => {
+    await carregarComandos();
+
+    await comandosExemplo();
+
+    document.getElementById('commandForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const trigger = document.getElementById('commandTrigger').value;
+        const text = document.getElementById('commandText').value;
+        addComandos(trigger, text);
+
+    });
+
+    document.getElementById('commandText').addEventListener('input', function(){
+        this.style.height = 'auto';
+    });
+
+    document.getElementById('commandTrigger').focus();
+
+});
+
+
+
+
+
