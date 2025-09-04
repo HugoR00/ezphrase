@@ -26,7 +26,7 @@ function replaceComandos(text, cursorPosition){
     //tiver a barra retorna null
 
     const commandTrigger = match[1].toLowerCase(); //o regex cria um array com as correspondências, no caso
-    //se o comando foi /bom dia ele cria um array com a posição 0 sendo o texto completo, no caso /bomdia, e cria na
+    //se o comando foi /bomdia ele cria um array com a posição 0 sendo o texto completo, no caso /bomdia, e cria na
     //posição 1 o texto sem a barra, no caso apenas bomdia
     const startPosition = cursorPosition - match[0].length;
     //Gera a posição de start tirando a posição do cursor que no caso é no fim menos o length da posição 0
@@ -45,3 +45,144 @@ function replaceComandos(text, cursorPosition){
 
     return null;
 }
+
+
+function realizarTroca(element,replacement){
+    const valorAntigo = element.value; //Pega o texto antigo que estava na tela
+    element.value = replacement.newText; //Substitui no elemento o valor pelo novo texto, ou seja, o texto
+    //atrelado ao comando
+
+    //Joga o cursor no final
+    element.setSelectionRange(replacement.newCursorPos, replacement.newCursorPos);
+
+    //Dispara eventos de notificação a frameworks, importante para casos em que se usa react por exemplo
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+
+    console.log(`✅ Comando /${replacement.commandUsed} substituído!`);
+}
+
+function handleInputElement(element,event){
+    if (!isLoaded || Object.keys(commands).length === 0){
+        return;
+    }
+
+    const cursorPosition = element.selectionStart;
+    const replacement = replaceComandos(element.value,cursorPosition);
+
+    if(replacement){
+        setTimeout(()=>{
+            realizarTroca(element,replacement);
+        }, 10);
+    }
+}
+
+//Trata elementos contentEditable (WhatsApp Web, etc)
+function handleContentEditableElement(element, event) {
+    if (!isLoaded || Object.keys(commands).length === 0){
+        return;
+    }
+
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0){
+        return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const textNode = range.startContainer;
+
+    if (textNode.nodeType !== Node.TEXT_NODE){
+        return;
+    }
+
+    const cursorPosition = range.startOffset;
+    const replacement = replaceComandos(textNode.textContent, cursorPosition);
+
+    if (replacement) {
+        setTimeout(() => {
+            // Substitui texto no nó
+            textNode.textContent = replacement.newText;
+
+            // Reposiciona cursor
+            const newRange = document.createRange();
+            newRange.setStart(textNode, replacement.newCursorPos);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+
+            // Dispara evento para notificar mudança
+            element.dispatchEvent(new Event('input', {bubbles: true}));
+
+            console.log(`✅ Comando /${replacement.commandUsed} substituído em contentEditable!`);
+        }, 10);
+    }
+}
+
+// Adiciona listeners para detectar digitação
+function addEventListeners() {
+    // Para input/textarea tradicionais
+    document.addEventListener('input', (event) => {
+        const element = event.target;
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+            handleInputElement(element, event);
+        }
+    }, true);
+
+    // Para elementos contentEditable (WhatsApp Web, Discord, etc)
+    document.addEventListener('input', (event) => {
+        const element = event.target;
+        if (element.contentEditable === 'true') {
+            handleContentEditableElement(element, event);
+        }
+    }, true);
+
+    console.log('🎯 Event listeners adicionados para detectar comandos');
+}
+
+// Escuta mensagens do popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'COMMANDS_UPDATED') {
+        commands = message.commands || {};
+        isLoaded = true;
+        console.log('🔄 Comandos atualizados via popup:', Object.keys(commands).length, 'comandos');
+        sendResponse({ success: true });
+    }
+});
+
+// =============================================
+// INICIALIZAÇÃO
+// =============================================
+
+// Inicializa quando DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+} else {
+    initialize();
+}
+
+async function initialize() {
+    console.log('🚀 Assistente de Atendimento iniciado na página:', window.location.hostname);
+
+    await carregarComandos();
+    addEventListeners();
+
+    // Observa mudanças no DOM para elementos adicionados dinamicamente
+    const observer = new MutationObserver((mutations) => {
+        // Reativa listeners se necessário (para SPAs)
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                // Elementos foram adicionados, listeners já estão globais
+            }
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
+
+
+
+

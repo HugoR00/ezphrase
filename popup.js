@@ -24,7 +24,7 @@ async function definirVisita(){
 async function comandosExemplo(){
     const primeiraVisita = await checarPrimeiraVisita(); //Confere primeiro se é o primeiro uso ou não do user
 
-    if(primeiraVisita && Object.keys(commands) === 0){ //Se primeira visita for true e os comandos estiverem vazios
+    if(primeiraVisita && Object.keys(commands).length === 0){ //Se primeira visita for true e os comandos estiverem vazios
         commands = { //Adiciona aos comandos os comandos abaixo
             'bomdia': 'Bom dia, tudo bem?! Como posso ajudar?',
             'boatarde': 'Boa tarde, tudo bem?! Como posso ajudar?',
@@ -64,7 +64,7 @@ async function salvarComandos(){
 async function carregarComandos(){
     try{
         const retornarComandos = await chrome.storage.sync.get(['quickCommands']); //Pega os key/value que estão em quickCommands
-        if (retornarComandos != null){ //Checa se quickCommands está nulo ou não
+        if (retornarComandos.quickCommands && typeof retornarComandos.quickCommands === 'object'){ //Checa se quickCommands está nulo ou não
             commands = retornarComandos.quickCommands; //Vincula a commands o que estava em quickCommands
             renderizarComandos(); //Renderiza no html os comandos que estão em commands
         }
@@ -99,7 +99,7 @@ function renderizarComandos(){
             <div class="comando-name">/${trigger}</div>
             <div class="comando-description">${commands[trigger]}</div>
         </div>
-        <button class="comando-delete" onclick="deleteCommand('${trigger}')" title="Excluir comando">×</button>
+        <button class="comando-delete" onclick="deletarComandos('${trigger}')" title="Excluir comando">×</button>
     </div>
     
     `).join('')
