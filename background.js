@@ -6,9 +6,6 @@ chrome.runtime.onInstalled.addListener((details) => {
         // Primeira instalação
         console.log('✨ Primeira instalação da extensão');
 
-        // Abre página de boas-vindas (opcional)
-        // chrome.tabs.create({ url: 'welcome.html' });
-
     } else if (details.reason === 'update') {
         // Atualização da extensão
         console.log('🔄 Extensão atualizada para versão:', chrome.runtime.getManifest().version);
@@ -23,7 +20,6 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('📨 Mensagem recebida no background:', message);
 
-    // Aqui você pode adicionar lógica para diferentes tipos de mensagem
     switch (message.type) {
         case 'GET_COMMANDS':
             // Retorna comandos salvos se necessário

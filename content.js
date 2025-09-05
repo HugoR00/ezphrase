@@ -46,6 +46,9 @@ function replaceComandos(text, cursorPosition){
     return null;
 }
 
+///////////////////////////
+//O element das 3 funções abaixo é definido lá nos eventlisteners
+//////////////////////////
 
 function realizarTroca(element,replacement){
     const valorAntigo = element.value; //Pega o texto antigo que estava na tela
@@ -63,13 +66,20 @@ function realizarTroca(element,replacement){
 }
 
 function handleInputElement(element,event){
-    if (!isLoaded || Object.keys(commands).length === 0){
+    if (!isLoaded || Object.keys(commands).length === 0){ //Verifica se está loadado ou se os commands estão vazios
         return;
     }
 
+    //Detecta a posição inicial a partir do selectionStart, um componente da interface HTMLTextAreaElement, representa
+    // o primeiro index do texto selecionado
     const cursorPosition = element.selectionStart;
+
+    //Faz o replace de comandos passando no que seria o text o valor do element,que no caso é o texto que está
+    //no input ou textarea e também passando a cursorPosition
     const replacement = replaceComandos(element.value,cursorPosition);
 
+    //Se tem algo no replacement, invoca a função realizarTroca que troca jogando o element pelo novo element
+    //definido acima
     if(replacement){
         setTimeout(()=>{
             realizarTroca(element,replacement);
